@@ -1,6 +1,6 @@
-// Copyright MMII-MMXVII Arthur A. Gleckler.  All rights reserved.
-
 // Web-Based Command Line Parser
+// Copyright (C) MMXVIII Arthur A. Gleckler.
+// GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
 
 // General parsing
 

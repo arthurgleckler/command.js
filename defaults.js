@@ -1,3 +1,7 @@
+// Command Line Defaults Fetched from Server
+// Copyright (C) MMXVIII Arthur A. Gleckler.
+// GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
+
 let DefaultsMixin = Base => class extends Base {
   constructor(grammar, makeURL) {
     super();

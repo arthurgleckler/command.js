@@ -1,3 +1,7 @@
+// Rocket Demo for Web-Based Command Line UI
+// Copyright (C) MMXVIII Arthur A. Gleckler.
+// GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
+
 const ORBIT_TYPES = [{name: "geosynchronous", class: "geosynchronous"},
                      {name: "high earth orbit", class: "heo"},
                      {name: "low earth orbit", class: "leo"},

@@ -1,6 +1,6 @@
-// Copyright MMII-MMXVIII Arthur A. Gleckler.  All rights reserved.
-
 // Web-Based Command Line UI
+// Copyright (C) MMXVIII Arthur A. Gleckler.
+// GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
 
 function commandArea() {
   return document.getElementById("command");
