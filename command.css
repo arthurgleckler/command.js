@@ -1,0 +1,56 @@
+#command {
+  border-top: 1px solid black;
+  background: lightgrey;
+  bottom: 0;
+  font-family: 'Ruluko', sans-serif;
+  font-size: x-large;
+  height: auto;
+  left: 0;
+  margin-top: 10px;
+  min-height: 1em;
+  position: fixed;
+  white-space: pre-wrap;
+  width: 100%;
+  z-index: 2;
+}
+#command li {
+  color: black;
+  line-height: 1.2em;
+  white-space: nowrap;
+}
+#command li:hover,
+#command .selected-completion {
+  background: blue;
+  color: white;
+}
+#command span {
+  position: relative;
+}
+#command ul {
+  background: lightgrey;
+  border-left: 1px solid grey;
+  border-right: 1px solid grey;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-top: 1px solid grey;
+  bottom: 1.2em;
+  left: -0.1em;
+  list-style: none;
+  margin-bottom: -0.1em;
+  margin-left: -0.25em;
+  padding-bottom: 0.1em;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  padding-top: 0.25em;
+  position: absolute;
+  user-select: none;
+}
+.command-name {
+  font-weight: 650;
+}
+.parameter-name {
+  font-style: italic;
+}
+.parameter-value {
+  color: blue;
+}

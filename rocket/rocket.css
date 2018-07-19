@@ -1,0 +1,41 @@
+#launch-pad {
+  bottom: 50px;
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  width: 10%;
+}
+.choice {
+  background: lightblue;
+}
+.fueled {
+  background: lightgreen;
+}
+.geosynchronous {
+  transform: translate(200px, -500px) rotate(90deg);
+}
+.heo {
+  transform: translate(200px, -400px) rotate(90deg);
+}
+.launched {
+  transition: 5s;
+  transition-timing-function: ease-out;
+}
+.leo {
+  transform: translate(200px, -200px) rotate(90deg);
+}
+.meo {
+  transform: translate(200px, -300px) rotate(90deg);
+}
+.rocket {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 10px;
+}
+.rocket.candidate {
+  border: 2px solid green;
+}
+.rocket figcaption {
+  font-family: sans-serif;
+  text-align: center;
+}

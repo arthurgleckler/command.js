@@ -1,0 +1,10 @@
+* Rocket icons
+
+The rockets in this directory came from
+[[https://www.iconfinder.com/search/?q=rocket&type=vector&price=free]].
+
+- ~mercury.png~ ([[https://www.iconfinder.com/bogdanrosu][Bogdan Rosu Creative]])
+- ~gemini.png~ ([[https://www.iconfinder.com/korawan_m][BomSymbols]])
+- ~apollo.png~ ([[https://www.iconfinder.com/ChihabJr][JRAOUI Chihab]])
+
+I removed borders and normalized their heights.
