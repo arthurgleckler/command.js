@@ -60,7 +60,7 @@ function unhighlight(classToRemove, selector="." + classToRemove) {
 function showCandidateRockets(selector) {
   return function (annotations, position, param) {
     highlight("candidate", selector);
-  }
+  };
 }
 
 function showChosenRocket(param, position) {
