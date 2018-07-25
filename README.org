@@ -41,7 +41,7 @@ will find it useful, too.
 
 * Demo
 
-[[screencast.gif][screencast]]
+[[https://arthurgleckler.github.io/command.js/screencast.gif][screencast]]
 
 As you watch the demo, note how it is possible to enter commands with
 few keystrokes by relying on completion using ~SPC~ and ~TAB~.  Also
@@ -55,7 +55,7 @@ an example of how an app can respond to commands as they are being
 entered, before the user finishes entering them.  This kind of
 integration makes entering valid commands even easier and faster.
 
-[[file:rocket/rocket.html][Try it yourself]].
+[[https://arthurgleckler.github.io/command.js/rocket/rocket.html][Try it yourself]].
 
 * Command structure
 
