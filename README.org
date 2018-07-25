@@ -1,0 +1,891 @@
+* ~Command.js~
+
+If your users like to use the keyboard to do complex things quickly,
+use ~command.js~ to add a command line to your web pages,
+supplementing your existing user interface.  ~Command.js~ offers
+keyboard shortcuts to make entering commands faster, and it gives
+detailed feedback as each command is entered.
+
+I have used ~command.js~ on several unpublished personal projects,
+including an address list app, a calendar app, and a revival of my
+bachelor's thesis in computational descriptive geometry, all with
+great success.  A good friend asked me to give him a copy, so I
+finally wrote a user manual and am publishing it.  I hope that you
+will find it useful, too.
+
+* Features
+
+- Completion :: Speeds up entering commands.  Shows the user what
+                input is valid at any point.
+- Parsing :: Allows parameters (arguments) to be restricted in some
+             way, not just strings, e.g. "12345" or "2018/7/18".
+- Integration :: Your web app can give feedback as the user enters a
+                 command, e.g. it can highlight the day on a calendar
+                 when a date is being entered.
+- Help :: Explains what is expected, e.g. "a date, e.g. 2018/7/18".
+          (This feature is planned but not yet implemented.)
+
+* Special keys
+  - ~M-x~ (~Alt-x~): Focus on the command area so you can enter a
+    command.
+  - ~ESC~: Drop focus on the command area.
+  - ~TAB~ or ~C-i~: Pop up a list of choices.  If there's only one, it
+    will be inserted instead.
+  - ~SPC~: Insert a space.  If it's not a valid input, a pop-up list
+    of choices will appear instead.  But if there's only one valid
+    input, it will be inserted instead.
+  - ~UP ARROW~, ~DOWN ARROW~: Choose among choices in a pop-up, if one
+    is displayed.
+  - ~RET~: Execute the current command, but only if it is valid,
+    i.e. parses.
+
+* Demo
+
+[[docs/screencast.gif][screencast]]
+
+As you watch the demo, note how it is possible to enter commands with
+few keystrokes by relying on completion using ~SPC~ and ~TAB~.  Also
+note how it is possible to find out what is acceptable input using the
+same keys when there is more than one choice.
+
+Finally, note how the rockets that are valid candidates for a command
+are shown with a box around them when the user is choosing one, and
+are shown with a green background once they have been chosen.  This is
+an example of how an app can respond to commands as they are being
+entered, before the user finishes entering them.  This kind of
+integration makes entering valid commands even easier and faster.
+
+[[file:docs/rocket/rocket.html][Try it yourself]].
+
+* Command structure
+
+Commands have this form:
+
+#+BEGIN_EXAMPLE
+<command name> <value>* [<keyword> <value>]*
+#+END_EXAMPLE
+
+For example:
+
+*Launch Rocket* *Apollo* orbit *geosynchronous*
+
+or:
+
+*Create Event* *on* today *time* 1:30pm-2pm *description* "Demo
+command.js." *location* "Mars"
+
+Parameters can be:
+
+- named (/keyword/, like ~orbit~ above) or unnamed (/positional/, like
+  ~Apollo~ above)
+- required or optional (All positional arguments are required, and
+  must appear before the first keyword arguments.)
+
+* How to add ~command.js~ to your page
+
+** HTML
+
+Start by adding this to your HTML:
+
+#+BEGIN_SRC html
+<link href="command.css" rel="stylesheet" type="text/css">
+<script src="command-parser.js"
+        type="application/javascript"></script>
+<script src="command-ui.js"
+        type="application/javascript"></script>
+…
+<div contenteditable="true" id="command"></div>
+#+END_SRC
+
+Make sure to copy ~command.css~, ~command-parser.js~, and
+~command-ui.js~ into your project.
+
+** Grammar
+
+Next, define a grammar.  The example below defines two commands, ~Fuel
+Rocket~ and ~Launch Rocket~.  Both commands require a ~name~
+parameter, which takes a string.  (Strings are the default parameter
+type.)  The ~Launch Rocket~ command also takes an optional ~orbit~
+parameter.  (Note that the grammar used on the ~docs/rocket.html~
+example page is different than this one.)
+
+#+BEGIN_SRC js
+  let ROCKET_GRAMMAR = [
+    { name: "Fuel Rocket", positional: ["name"] },
+    { name: "Launch Rocket",
+      positional: ["name"],
+      optional: ["orbit"] }
+  ];
+#+END_SRC
+
+** Execute
+
+Now, decide what to do when a valid command is entered.  Define a
+function that accepts a command.  A command is an object with two
+properties: ~name~, a string that names the command, e.g. ~Fuel
+Rocket~; and ~parameters~, which is another object whose properties
+name parameters and supply their values.  For example, a ~Launch
+Rocket~ command might look like this:
+
+#+BEGIN_SRC js
+  {name: "Launch Rocket",
+   parameters: {name: "Mercury",
+                orbit: "geosynchronous"}}
+#+END_SRC
+
+Here's a function that accepts a command and acts on it:
+
+#+BEGIN_SRC js
+  function handleCompleteRocketCommand(command) {
+    let parameters = command.parameters;
+
+    if (command.name == "Fuel Rocket") {
+      fuelRocket(parameters.name);
+    } else if (command.name == "Launch Rocket") {
+      launchRocket(parameters.name,
+                   "orbit" in parameters
+                   ? parameters.orbit
+                   : null);
+    }
+  }
+#+END_SRC
+
+** Initialize
+
+Finally, initialize a command processor based on the grammar and
+handler you've created.  For now, let's ignore partially entered
+commands.  (Later, we'll show how to give your app information about
+commands as they're being entered.  That's useful for highlighting
+relevant objects the app is already showing, for example.)
+
+Here's an example of this last step:
+
+#+BEGIN_SRC js
+  function handlePartialRocketCommand(annotations, position) {
+    return "ignore";
+  }
+
+  initializeCommandHandlers(
+    new CommandProcessor(
+      new CommandContext(),
+      handleCompleteRocketCommand,
+      parseCommandFromGrammar(ROCKET_GRAMMAR),
+      handlePartialRocketCommand));
+#+END_SRC
+
+Place that inside a ~<script>~ tag on your page.
+
+Now you should be able to enter and execute commands that are in your
+grammar.  Completion of command and parameter names should work, too.
+
+* Parsing restricted parameter values
+
+~Command.js~ is useful even if all parameter values are strings.
+However, parameter values don't have to be strings.  Some parameter's
+values may be restricted in some way, e.g. an ~integer~ parameter
+might accept values like "12345" or a ~date~ parameter might accept
+values like "2018/7/18".  It's possible to characterize the acceptable
+values so that completion can help the user enter such values
+accurately and quickly.  In support of this, ~command.js~ makes it
+easy to define new /parsers/.
+
+In our usage, a parser is a function that determines whether a
+substring of the input string is valid in some sense.  If the input is
+valid, the parser returns a /witness/, our term for a value that
+represents that substring.  For example, a parser for integers might
+return ~123~ when given the string "123".
+
+To make it easy to write new parsers, ~command.js~ includes a [[parser-combinators][parser
+combinator]] library.  Parser combinators are functions that take
+parsers as parameters and return more powerful parsers based on them.
+
+Here's an example that demonstrates how to define a new parser.  Here,
+we'll define a parameter type that limits the values that can be
+entered to those in a constant list.  In this case, the ~orbit~
+parameter to the ~Launch Rocket~ command will be restricted to four
+possible orbits.
+
+** Define a parser for orbits
+
+First, we make an array of the allowed orbit names.
+
+#+BEGIN_SRC js
+  const ORBIT_NAMES = ["geosynchronous",
+                       "high earth orbit",
+                       "low earth orbit",
+                       "medium earth orbit"];
+#+END_SRC
+
+For each of these orbit names, we use ~parseConstant~ to construct a
+parser that accepts only that name, and returns it.  From those, we
+use ~parseChoice~ to construct a parser that accepts any of the names.
+See [[parser-combinators][Parser Combinators]] below for details about the full parser
+combinator library.
+
+#+BEGIN_SRC js
+  let parseOrbit =
+      parseChoice(...ORBIT_NAMES.map(ot => parseConstant(ot)));
+#+END_SRC
+
+<<presentation-type>>
+** Define a /presentation type/ for orbits
+
+Now we use ~mpt~ (~Make Presentation Type~) to construct a
+/presentation type/ given our parser and a description of what it
+accepts.  At this point in our discussion, we're just using
+presentation types as a way to package the parser and its description.
+Later, we'll learn how your app can use more elaborate presentation
+types to respond to the command as it is being entered, i.e. before it
+is valid.
+
+#+BEGIN_SRC js
+  const ORBIT_TYPE = mpt(parseOrbit, "type of orbit");
+#+END_SRC
+
+** Use the orbit presentation type in the grammar
+
+Recall the grammar we defined before.  We used "orbit" to specify the
+name of an optional parameter.  Since we didn't specify a presentation
+type, it defaulted to the string type, which accepts any text
+surrounded by double quotes.
+
+#+BEGIN_SRC js
+  let ROCKET_GRAMMAR = [
+    { name: "Fuel Rocket", positional: ["name"] },
+    { name: "Launch Rocket",
+      positional: ["name"],
+      optional: ["orbit"] }
+  ];
+#+END_SRC
+
+This time, we specify a presentation type, ~ORBIT_TYPE~.  With this
+grammar, the orbit must be one of those listed in ~ORBIT_NAMES~.
+Also, double quotes are no longer needed — or accepted.
+
+#+BEGIN_SRC js
+  let ROCKET_GRAMMAR = [
+    { name: "Fuel Rocket", positional: ["name"] },
+    { name: "Launch Rocket",
+      positional: ["name"],
+      optional: [["orbit", ORBIT_TYPE]] }
+  ];
+#+END_SRC
+
+It's easy to create custom parsers and presentation types not just for
+choices, as in ~ORBIT_TYPE~, but also for sequences, punctuation-
+separated values, numbers in ranges, etc.  We'll cover the full
+repertoire of functions for doing this later in [[parser-combinators][Parser Combinators]].
+In the meantime, let's cover how your app can respond to a command as
+it is being entered.
+
+* Responding to partial commands
+
+As the user types, the application can receive callbacks as the user
+types commands, even before they are complete.  There are two
+categories of callback:
+
+1. for parameters already typed
+2. for parameters that have only been partially typed
+
+** Define a parser for rocket names
+
+For example, if we want to highlight the rockets as their names are
+typed (2), then mark the chosen one (1), we follow the same pattern
+that we used when defining ~ORBIT_TYPE~ above.  First, we define an
+array that lists the allowed names.
+
+#+BEGIN_SRC js
+  const ROCKET_NAMES = ["Mercury", "Gemini", "Apollo"];
+#+END_SRC
+
+<<parse-rocket>>
+Then we define a parser that accepts any of these names.
+
+#+BEGIN_SRC js
+  let parseRocket =
+    parseChoice(...ROCKET_NAMES.map(rt => parseConstant(rt)));
+#+END_SRC
+
+** Define a presentation type for rocket names
+
+This time, we pass an additional parameter to ~mpt~.  It's an object
+that defines two callback functions.
+
+- ~showCandidates~ :: called when an object of our type is being
+     entered
+- ~showChoices~ :: called when an object of our type has been entered
+                   completely
+
+#+BEGIN_SRC js
+  const ROCKET_TYPE = mpt(parseRocket,
+                          "rocketship",
+                          { showCandidates: showCandidateRockets,
+                            showChoices: showChosenRocket });
+#+END_SRC
+
+** Define ~showCandidates~ and ~showChoices~
+
+Let's define ~showCandidateRockets~ and ~showChosenRocket~, the
+callback functions referenced above.  We'll highlight all the
+candidate rockets by adding the ~candidate~ class to their DOM
+elements.  We'll highlight the chosen rocket by adding the ~choice~
+class to its DOM element.
+
+First, let's define some simple DOM-manipulation functions to add and
+remove highlighting.
+
+#+BEGIN_SRC js
+function alter(action, selector) {
+  for (let n of Array.from(document.querySelectorAll(selector))) {
+    action(n);
+  }
+}
+
+function highlight(classToAdd, selector) {
+  alter(n => n.classList.add(classToAdd), selector);
+}
+
+function unhighlight(classToRemove) {
+  alter(n => n.classList.remove(classToRemove), "." + classToRemove);
+}
+#+END_SRC
+
+Now our ~showCandidates~ function, ~showCandidateRockets~, is simple.
+For now, we'll ignore all the function parameters.  Since we're going
+to highlight all the rockets, we don't need to know anything more than
+that the user is entering a ~ROCKET_TYPE~ command-line parameter,
+which we know because ~showCandidateRockets~ is being called.
+[[show-candidates-signature][Later]], we'll explain what the function parameters mean.
+
+#+BEGIN_SRC js
+function showCandidateRockets(annotations, position, param) {
+  highlight("candidate", ".rocket");
+}
+#+END_SRC
+
+In our ~showChoices~ function, ~showChosenRocket~, we can't ignore the
+function parameters.  We need to know which rocket was chosen, so we
+look at ~param~, which is of type ~Annotation~.  We'll explain
+annotations [[annotation][later]].  For now, we'll take advantage of the fact that
+~param.label.witness~ holds the name of the chosen rocket.  The
+/witness/ is the result of the successful ~parseRocket~ call, which in
+turn was the result of a success ~parseConstant~ call.  (See the
+definition of [[parse-rocket][parseRocket]] above.)
+
+#+BEGIN_SRC js
+function showChosenRocket(param, position) {
+  highlight("choice", "#" + param.label.witness);
+}
+#+END_SRC
+
+** Use the rocket presentation type in the grammar
+
+Let's use our new ~ROCKET_TYPE~ presentation type in our command
+grammar.
+
+#+BEGIN_SRC js
+  let ROCKET_GRAMMAR = [
+    { name: "Fuel Rocket", positional: [["name", ROCKET_TYPE]] },
+    { name: "Launch Rocket",
+      positional: [["name", ROCKET_TYPE]],
+      optional: [["orbit", ORBIT_TYPE]] }
+  ];
+#+END_SRC
+
+** Handle complete (finished) commands
+
+Let's update ~handleCompleteRocketCommand~ to clean up after a valid
+command is entered.
+
+Here are two functions for removing the highlighting we added in
+~showCandidateRockets~ and ~showChosenRocket~.
+
+#+BEGIN_SRC js
+function unShowCandidates() {
+  unhighlight("candidate");
+}
+
+function unShowChoices() {
+  unhighlight("choice");
+}
+#+END_SRC
+
+Now let's add these lines to ~handleCompleteRocketCommand~.  They will
+remove the highlighting on the candidate rockets and the chosen
+rocket, then erase the command itself so we're ready for user to begin
+entering the next one.
+
+#+BEGIN_SRC JS
+  unShowCandidates();
+  unShowChoices();
+  editArea().innerHTML = "";
+#+END_SRC
+
+This is ~handleCompleteRocketCommand~ with our new lines.
+
+#+BEGIN_SRC js
+  function handleCompleteRocketCommand(command) {
+    unShowCandidates();
+    unShowChoices();
+    editArea().innerHTML = "";
+
+    let parameters = command.parameters;
+
+    if (command.name == "Fuel Rocket") {
+      fuelRocket(parameters.name);
+    } else if (command.name == "Launch Rocket") {
+      launchRocket(parameters.name,
+                   "orbit" in parameters
+                   ? parameters.orbit
+                   : null);
+    }
+  }
+#+END_SRC
+
+** Handle partial (unfinished) commands
+
+Finally, here is our new ~handlePartialRocketCommand~.  It first
+removes highlighting from rocket candidates and the chosen rocket that
+may be left over from an earlier instance of the command (e.g. before
+the most recent keystroke), then uses the ~showCandidates~ and
+~showChoices~ functions we defined on ~ROCKET_TYPE~ to show the
+candidates for the current parameter (if it's of type ~ROCKET_TYPE~)
+and any choice that has already been made.
+
+#+BEGIN_SRC js
+  function handlePartialRocketCommand(annotations, position) {
+    unShowCandidates();
+    unShowChoices();
+    showCandidatesAndChoices(annotations, position);
+  }
+#+END_SRC
+
+<<annotation>>
+* ~Annotation~ class
+
+Like parsers in other programs, parsers used by ~command.js~ return a
+value representing the input string that has been parsed.  We call
+this value the /witness/ for that parse.  (Most texts uses the term
+/abstract syntax tree/ for this concept, but we use /witness/ for
+brevity and because the value need not be tree-structured.)  The
+witness is what is passed to ~handleCompleteRocketCommand~ in our
+example, and in general to whatever function is the second parameter
+to the constructor for ~CommandProcessor~.  But in order to support
+app-specific UI feedback while the command is being entered, perhaps
+before it has a valid parse, we use ~Annotation~ objects.
+
+** ~Annotation~ properties
+
+The basic idea of ~Annotation~ objects is to label substrings of the
+input command with additional information.  Every ~Annotation~ is an
+object with three properties:
+
+- ~start~ :: the start offset in the input string
+- ~end~ :: the end offset in the input string
+- ~label~ :: the metadata object attached to the range [start, end) of
+             the input string
+- ~witness~ :: a value that represents the input substring, present
+               only if the substring has a valid parse
+
+** ~Label~ objects
+
+A label is an object with at least one property, ~tag~.  That is just
+a string that identifies what type of label it is.  For each tag, a
+different set of additional properties is included.  It's possible to
+use the ~annotate~ function to define new tags (or, more precisely, to
+define parsers that create ~Annotation~ objects whose tags have new
+labels), and you may find that useful.  The parser combinators already
+defined by ~command.js~ create ~Annotation~ objects with labels these
+tags:
+
+- ~help~ :: add a ~helpText~ property that can be used (once
+            implemented) to help the user when entering a particular
+            parameter type
+- ~command-name~ :: add the command's ~name~
+- ~parameter-name~ :: add ~commandName~ and parameter ~name~
+- ~parameter-value~ :: add ~commandName~, parameter ~name~, and
+     parameter ~type~ properties
+
+** ~showCandidates~ and ~showChoices~
+
+We saw ~Annotation~ objects before as parameters to the two functions
+used [[presentation-type][above]] in the introduction to Presentation Types.  Below are the
+complete function signatures of those functions.  So now you can see
+how you can use the information in an ~Annotation~ to determine
+whether a substring is part of a command name, a parameter name, or a
+parameter value, or if it has associated help text.
+
+<<show-candidates-signature>>
+- ~showCandidates~ (/annotations/, /position/, /param/)
+     - /annotations/ :: all the annotations for this command.
+     - /position/ :: the current input position, i.e. where the cursor
+                     is.  (It might not be at the end of the command,
+                     e.g. if the user has moved it backwards using the
+                     arrow keys.)
+     - /param/ :: the annotation of a parameter value, possibly blank,
+                  that contains /position/.  Note that
+                  ~showCandidates~ will not be called if there is no
+                  such annotation.
+- ~showChoices~ (/param/, /position/)
+     - /param/ :: the annotation of a parameter value that contains
+                  /position/ and that was a valid parse.  Note that
+                  ~showChoices~ will not be called if there is no such
+                  annotation.
+     - /position/ :: the current input position, i.e. where the cursor
+                     is.  (It might not be at the end of the command,
+                     e.g. if the user has moved it backwards using the
+                     arrow keys.)
+
+* ~sendCommand~ function
+
+So far, the Rocket example we have been using does all of its work on
+the client, i.e. in the browser.  Once it is loaded, there is no
+communication with the server, even when a command is executed.
+However, you may want to send commands to the server.  The function
+~sendCommand~ exists for that purpose.  Here's an example:
+
+#+BEGIN_SRC js
+  function sendRocketCommand(command) {
+    sendCommand(command,
+                defaultFailureHandler,
+                defaultSuccessHandler,
+                "rocket/command");
+
+  initializeCommandHandlers(
+    new CommandProcessor(
+      new CommandContext(),
+      sendRocketCommand,
+      parseCommandFromGrammar(ROCKET_GRAMMAR),
+      handlePartialRocketCommand));
+#+END_SRC
+
+Instead of executing ~handleCompleteRocketCommand~ as before, this
+will use an HTTP POST to send the JSON representing the command to the
+server at URL ~/rocket/command/~.  Once the server receives and
+executes the command, it can either respond with HTTP status 200 and a
+URL, in which case the browser will switch to the new URL; or with
+HTTP 204, in which case it will reload the current page; or with
+another HTTP status, in which case it will use JavaScript's ~alert~ to
+display the status.
+
+Another function can be supplied instead of ~defaultSuccessHandler~,
+in which case it will be called with the HTTP [[https://developer.mozilla.org/en-US/docs/Web/API/Request][Request]] object whenever
+the server responds with a status code less than 400.
+
+Another function can be supplied instead of ~defaultFailureHandler~,
+in which case, if the server responds with a status code of at least
+400, the function will be called with the HTTP [[https://developer.mozilla.org/en-US/docs/Web/API/Request][Request]] object and a
+zero-parameter /retry/ function that can be called to try sending the
+command to the server again.
+
+<<command-context>>
+* ~CommandContext~ class
+
+The ~CommandContext~ class gives apps a way to provide app-specific
+information to app-specific parsers they may use, while keeping
+parsing pure in the functional programming sense.  It can be used to
+allow the parser to inspect the DOM, or to include default values
+fetched from the server as possible completions for parameter values,
+or for other application-specific purposes.  For example, a parser for
+dates in a calendar app may reference information about upcoming
+events that is kept in a subclass of ~CommandContext~.  Currently, the
+most sophisticated use to which the context has been put is [[parameter-defaults][parameter
+defaults]].
+
+<<parameter-defaults>>
+* Default parameter values
+
+~Command.js~ includes a mechanism for fetching default values for
+parameters from a server.  The idea is that some commands are for
+editing existing objects modeled by the application, and that some
+parameters may represent attributes of those objects, and that those
+objects may be stored on the server, not locally.[fn:1]  When a
+parameter has a default value fetched from the server, hitting ~TAB~
+before entering any characters will cause the fetched value to appear
+in a completion pop-up.
+
+For example, we might add an ~Edit Rocket~ command to our rocket
+application, giving it two optional parameters, ~country~ and
+~serial-number~, then start entering this command:
+
+*Edit Rocket* *Apollo* country *USA* serial-number 
+
+At this point, if we hit ~TAB~, the choice *SA-506*, the serial number
+for Apollo 11, might pop up.  This does not appear in the grammar, but
+would be fetched from the server by asking it for defaults for
+*Apollo*.
+
+** Define a ~keyParameter~ property
+
+The implicit ~name~ parameter, whose value is "Apollo" in this case,
+is the key with which we'll look up the default values.  That's why,
+when we add the new command to the grammar, we include a
+~keyParameter~ property, set to "name".  Here's the updated grammar:
+
+#+BEGIN_SRC js
+  let ROCKET_GRAMMAR = [
+    { name: "Edit Rocket",
+      keyParameter: "name",
+      positional: [["name", ROCKET_TYPE]],
+      optional: ["country", "serial-number"] },
+    { name: "Fuel Rocket", positional: [["name", ROCKET_TYPE]] },
+    { name: "Launch Rocket",
+      positional: [["name", ROCKET_TYPE]],
+      optional: [["orbit", ORBIT_TYPE]] }
+  ];
+#+END_SRC
+
+** Load ~defaults.js~
+
+We load the parameter-defaulting code in our HTML ~<head>~.
+
+#+BEGIN_SRC html
+<script src="defaults.js" type="application/javascript"></script>
+#+END_SRC
+
+** Subclass ~CommandContext~ using ~DefaultsMixin~
+
+We define ~RocketContext~, a subclass of ~CommandContext~ that adds
+the methods and properties required for handling defaults, including a
+new constructor.
+
+#+BEGIN_SRC js
+class RocketContext extends DefaultsMixin(CommandContext) {
+  constructor(grammar, makeURL) {
+    super(grammar, makeURL);
+  }
+}
+#+END_SRC
+
+** Connect to server
+
+Now we use install the new context, giving it a function that will map
+from a rocket name to the URL used to fetch defaults for it in the
+form of a JSON object:
+
+#+BEGIN_SRC js
+function makeURL(name) {
+  return "rocket/defaults/" + name;
+}
+…
+let context = new RocketContext(ROCKET_GRAMMAR, makeURL);
+…
+  initializeCommandHandlers(
+    new CommandProcessor(
+      context,
+      handleCompleteRocketCommand,
+      parseCommandFromGrammar(ROCKET_GRAMMAR),
+      handlePartialRocketCommand));
+#+END_SRC
+
+In our case, the relative URL ~rocket/defaults/Apollo~, for example,
+might return something like this:
+
+#+BEGIN_SRC js
+{"Apollo":{"country":"USA","serial-number":"SA-506"}}
+#+END_SRC
+
+Now defaults should work as described above, assuming that you've
+modified the server to handle the ~rocket/defaults/<name> URL.
+
+<<parser-combinators>>
+* Parser Combinators
+
+Parser combinators are functions that take parsers as parameters and
+return more powerful parsers based on them.
+
+Each of the functions listed below returns a parser.  A parser is a
+function that takes an input string and a [[success][~Success~]] object.  A
+~Success~ represents the current successful state of the parse,
+including the position reached so far in the string.
+
+Parsing starts with a ~Success~ object at offset zero in the input
+string.  Parsers chain ~Success~ objects until the entire input is
+consumed, unless the input is invalid, i.e. incomplete or incorrect.
+They also return zero or more [[failure][~Failure~]] objects, which represent
+places where the parse goes from valid to not valid, either because of
+invalid input or because of a premature end.
+
+Unless otherwise noted, each function in the lists below returns a
+parser function rather than carrying out the parse immediately.
+
+** Common
+
+These are the combinators that most apps will make use of.
+
+- ~parseConstant~ (/constant/, /witness=constant/) :: Return /witness/
+     if input matches /constant/.
+- ~parseChoice~ (/...parsers/) :: Return the union of the results of
+     all of the /parsers/.
+- ~parseSequence~ (/mergeWitnesses/, /...parsers/) :: Parse using all
+     /parsers/ in sequence.  Use /mergeWitnesses/ to merge the
+     witnesses in the chain of each successful parse.
+- ~parseStar~ (/mergeWitnesses/, /parser/) :: Parse using /parser/
+     repeatedly until it returns an incomplete result, then return the
+     results before that.  Use /mergeWitnesses/ to merge the witnesses
+     in the chain of each successful parse.
+- ~parsePlus~ (/mergeWitnesses/, /parser/) :: Like /parseStar/, but
+     /parser/ must match at least once.
+- ~parseOptional~ (/parser/, /witness/ = "missing") :: Return a parser
+     equivalent to /parser/, but that also succeeds if there is no
+     match.
+- ~parseIntegerInRange~ (/count/, /start/ = 0) :: Parse integers in
+     the range [ /start/, /start + count/ ).
+- ~parseSeparated~ (/mergeWitnesses/, /parseElement/, /parseSeparator/) ::
+     Like /parseStar/, but elements must be separated by input that
+     /parseSeparator/ accepts.
+- ~parseCommaSeparated~ (/parser/) :: Like /parseStar/, but elements
+     must be separated by commas that may be separated by whitespace.
+- ~parseRestrictedRegexp~ (/makeWitness/, /regexp/) :: Read until the
+     end of /regexp/ is found.  For now, /regexp/ must be a regular
+     expression that matches all non-empty prefixes of its input.
+     That way, it will match as the user types each character.
+     Construct the witness by passing the input string and registers
+     to /makeWitness/.
+- ~parseSubset~ (/constants/, /parseSeparator/) ::  Accept any subset
+     of the strings in the list /constants/, each separated from the
+     next by strings that /parseSeparator/ matches.
+- ~parseWithCompletions~ (/makeCompletions/, /parser/) :: Return a
+     parser equivalent to /parser/, but that returns a result with
+     completions returned by /makeCompletions/ when given a
+     ~CommandContext~, a ~Failure~, and start position.  Assume that
+     no completions pause is necessary.
+- ~withoutCompletions~ (/parser/) :: Return a parser equivalent to
+     /parser/, but which returns no completions.
+
+** Primitive
+
+These are the most primitive combinators, which are mostly used to
+create more complex combinators.
+
+- ~parseFail~ (/input/, /success/) :: Always fail.  (~parseFail~ does
+     not return a parser; it is a parser.)
+- ~parseAlternatives~ (/parser1/, /parser2/) :: Return the union of
+     the results of /parser1/ and /parser2/.
+- ~parseChain~ (/mergeWitnesses/, /parser1/, /chain/) :: Run
+     /parser1/, then the parsers that result from calling /chain/ on
+     each ~Success~, starting from where that ~Success~ left off.
+     Construct each successful parse's witness by calling
+     /mergeWitnesses/ on the witnesses from its ~Success~ and that of
+     the accumulated ~Success~.
+- ~parseThen~ (/mergeWitnesses/, /parser1/, /parser2/) :: Run
+     /parser1/, then /parser2/, in sequence.  Construct each
+     successful parse's witness by calling /mergeWitnesses/ on the
+     witnesses from its ~Success~ and that of the accumulated
+     ~Success~.
+- ~parseEmpty~ (/witness/ = "empty") :: Match the empty string and
+     return /witness/.
+- ~parseNonEmpty~ (/parser/) :: Run /parser/, but fail if it fails or
+     if it matches the empty string.
+- ~parseTransform~ (/parser/, /transform/) :: Run /parser/.  Run
+     /transform/ on the witnesses of all successful parses.
+- ~parseFilter~ (/parser/) :: Return a parser equivalent to /parser/,
+     but drop any ~Success~ for which the witness is a false value.
+
+** Specialized
+
+These are specialized combinators that are less often used.
+
+- ~parseWithFallback~ (/parser/, /fallbackParser/) :: Return the union
+     of the results of /parser/ and /fallbackParser/, but only include
+     a failure, if any, from /parser/, and only if it is further than
+     the furthest success of either parser.
+- ~parseDelayed~ (/makeParser/) :: Run the parser created by thunk
+     /makeParser/, but wait to call /makeParser/ until the parser is
+     invoked.
+- ~parsePause~ (/parser/) :: Return what /parser/ would produce, but
+     set the ~pause~ bit in every ~Failure~.
+- ~parseMaybe~ (/parser/) :: Drop any /Success/ that /parser/ returns
+     that has a null witness.  This is a convenient way to build
+     parsers that might fail because a computation to produce the
+     witness detects the failure.
+- ~parseContext~ (/makeContext/, /parser/) :: Run /parser/, but return
+     a result that substitutes the [[command-context][CommandContext]] in each ~Success~
+     result with one produced by calling /makeContext/ on that
+     ~Success~.
+- ~annotate~ (/label/, /parser/) :: Return a parser equivalent to
+     /parser/ but that adds an annotation with /label/, regardless of
+     whether the parse succeeds or fails.  On success, add the witness
+     to the label.
+
+For more examples of the use of these parser combinators, see
+[[file:docs/rocket/rocket.js][rocket.js]].
+
+<<internals>>
+* Internals
+
+For the most part, you should not need to understand the internals of
+~command.js~ in order to use it effectively.  However, you may want to
+know more for debugging, or because you want to make changes to
+~command.js~ itself, or because you're curious.  I'll cover a few of
+the details here, but feel free to write to me if something is unclear
+or you want to know more.
+
+Each parser takes an input string and a ~Success~ object and returns
+two values: a list of ~Success~ objects and either a single ~Failure~
+object or ~false~.  The top-level parser is given a ~Success~ that
+records the starting position in the input string as zero.
+
+A ~Failure~ object is only returned if a failed parse occurs that ends
+after all of the successful ones.  (Multiple parses may be in valid at
+some point in the input because the input is ambiguous without the
+rest of the command.)
+
+<<success>>
+** ~Success~
+
+Each ~Success~ keeps track of four things:
+
+- ~annotations~ :: the [[annotation][~Annotation~ objects]] seen so far
+- ~context~ :: the [[command-context][~CommandContext~]]
+- ~end~ :: the end offset in the input string
+- ~witness~ :: the value that represents the substring covered by this
+               ~Success~
+
+<<failure>>
+** ~Failure~
+
+Each ~Failure~ keeps track of four things:
+
+- ~annotations~ :: the [[annotation][~Annotation~ objects]] seen so far
+- ~completions~ :: an array of strings that are the possible
+                   completions from the point where the parser that
+                   produced this ~Failure~ started
+- ~end~ :: the end offset in the input string
+- ~pause~ :: a Boolean that is true iff the included list of
+             ~completions~ is incomplete
+
+If ~Failure.pause~ is true, that means that the included list of
+completions is incomplete and that completion should therefore pause.
+(This is useful because some parameter types can't enumerate all
+possible completions.  Hitting ~TAB~ in that case shouldn't result in
+jumping forward, even if only one completion is available.)
+
+<<command-context>>
+* Acknowledgements
+
+~Command.js~ was inspired by [[https://www.cliki.net/CLIM][CLIM]] (the Common Lisp Interface Manager),
+[[https://en.wikipedia.org/wiki/Genera_(operating_system)][Symbolics Genera]], and [[https://en.wikipedia.org/wiki/TOPS-20][TOPS-20]].  It's nowhere near as sophisticated as
+CLIM, in particular, but I'm hoping that I have implemented similar
+ideas in a way that matches the expectations of JavaScript programmers
+and web users.
+
+Thank you to everyone involved in those projects.  Using all three of
+those systems was a pleasure and an inspiration.
+
+[fn:1] I'm not confident that the abstraction provided for handling
+default parameter values is a good one.  I'm documenting it here, but
+it is even more likely to change than other parts of the ~command.js~
+API.  In particular, I don't like the way it conflates parameter names
+and model object attribute names.  In the applications I've built so
+far, this has been a reasonable decision, but this assumption seems
+unlikely to hold.  I also don't like how cache invalidation works
+(purely by time), but that has also worked well so far.
+
+* Copyright
+
+The files in this repository, with the exception of "LICENSE.txt",
+"COPYING.LESSER", "apollo.png", "gemini.png", and "mercury.png", are
+copyright MMXVIII Arthur A. Gleckler.  I'm releasing them under the
+GNU LGPL v3.  Please see "COPYING.LESSER" and "LICENSE.txt" for
+details.

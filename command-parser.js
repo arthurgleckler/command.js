@@ -2,30 +2,6 @@
 // Copyright (C) MMXVIII Arthur A. Gleckler.
 // GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
 
-// General parsing
-
-// Each parser takes an input string and a `success' object and returns two
-// values: a list of `success' objects and either a single `failure' object or
-// false.  The top-level parser is given a success object that records the
-// starting position in the input string as zero.
-
-// The context is an application-specific object used to influence parsing while
-// keeping parsing pure in the functional programming sense.  For example, it
-// can be used to allow the parser to inspect the DOM, or to include default
-// values fetched from the server as possible completions for parameter values.
-
-// Both success and failure objects record the position at which matching ended
-// and a set of annotations of the input stream.
-
-// Success objects also record a witness — an object representing the parse
-// between the start position given to the parser and the end position recorded
-// in the success object.  In addition, they record the context.
-
-// The failure object is only returned if a failed parse occurs that ends after
-// all of the successful ones.  It contains a list of completions possible at
-// its end.  It also includes a Boolean that specifies whether the included list
-// of completions is incomplete and that completion should therefore pause.
-
 class Annotation {
   constructor(label, start, end) {
     this.end = end;
@@ -394,8 +370,7 @@ function parseSequence(mergeWitnesses, ...parsers) {
   };
 }
 
-// Run <parser> on <input> and <start>.  Run <transform> on the witnesses of all
-// successful parses.
+// Run <parser>.  Run <transform> on the witnesses of all successful parses.
 function parseTransform(parser, transform) {
   function transformSuccess(s) {
     return new Success(s.annotations, s.context, s.end, transform(s.witness));
