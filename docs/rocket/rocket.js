@@ -2,13 +2,13 @@
 // Copyright (C) MMXVIII Arthur A. Gleckler.
 // GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
 
-const ORBIT_TYPES = [{name: "geosynchronous", class: "geosynchronous"},
+const ORBIT_NAMES = [{name: "geosynchronous", class: "geosynchronous"},
                      {name: "high earth orbit", class: "heo"},
                      {name: "low earth orbit", class: "leo"},
                      {name: "medium earth orbit", class: "meo"}];
 
 let parseOrbit =
-    parseChoice(...ORBIT_TYPES.map(ot => parseConstant(ot.name, ot.class)));
+    parseChoice(...ORBIT_NAMES.map(ot => parseConstant(ot.name, ot.class)));
 
 const ORBIT_TYPE = mpt(parseOrbit, "type of orbit");
 
