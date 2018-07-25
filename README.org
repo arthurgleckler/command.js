@@ -41,7 +41,7 @@ will find it useful, too.
 
 * Demo
 
-[[https://arthurgleckler.github.io/command.js/screencast.gif][screencast]]
+[[https://arthurgleckler.github.io/command.js/screencast.gif][https://arthurgleckler.github.io/command.js/screencast.gif]]
 
 As you watch the demo, note how it is possible to enter commands with
 few keystrokes by relying on completion using ~SPC~ and ~TAB~.  Also
