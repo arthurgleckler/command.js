@@ -195,7 +195,7 @@ valid, the parser returns a /witness/, our term for a value that
 represents that substring.  For example, a parser for integers might
 return ~123~ when given the string "123".
 
-To make it easy to write new parsers, ~command.js~ includes a [[parser-combinators][parser
+To make it easy to write new parsers, ~command.js~ includes a [[#parser-combinators][parser
 combinator]] library.  Parser combinators are functions that take
 parsers as parameters and return more powerful parsers based on them.
 
@@ -227,7 +227,6 @@ combinator library.
       parseChoice(...ORBIT_NAMES.map(ot => parseConstant(ot)));
 #+END_SRC
 
-<<presentation-type>>
 ** Define a /presentation type/ for orbits
 
 Now we use ~mpt~ (~Make Presentation Type~) to construct a
@@ -274,7 +273,7 @@ Also, double quotes are no longer needed — or accepted.
 It's easy to create custom parsers and presentation types not just for
 choices, as in ~ORBIT_TYPE~, but also for sequences, punctuation-
 separated values, numbers in ranges, etc.  We'll cover the full
-repertoire of functions for doing this later in [[parser-combinators][Parser Combinators]].
+repertoire of functions for doing this later in [[#parser-combinators][Parser Combinators]].
 In the meantime, let's cover how your app can respond to a command as
 it is being entered.
 
@@ -298,7 +297,6 @@ array that lists the allowed names.
   const ROCKET_NAMES = ["Mercury", "Gemini", "Apollo"];
 #+END_SRC
 
-<<parse-rocket>>
 Then we define a parser that accepts any of these names.
 
 #+BEGIN_SRC js
@@ -355,7 +353,7 @@ For now, we'll ignore all the function parameters.  Since we're going
 to highlight all the rockets, we don't need to know anything more than
 that the user is entering a ~ROCKET_TYPE~ command-line parameter,
 which we know because ~showCandidateRockets~ is being called.
-[[show-candidates-signature][Later]], we'll explain what the function parameters mean.
+[[#showcandidates-and-showchoices][Later]], we'll explain what the function parameters mean.
 
 #+BEGIN_SRC js
 function showCandidateRockets(annotations, position, param) {
@@ -366,11 +364,11 @@ function showCandidateRockets(annotations, position, param) {
 In our ~showChoices~ function, ~showChosenRocket~, we can't ignore the
 function parameters.  We need to know which rocket was chosen, so we
 look at ~param~, which is of type ~Annotation~.  We'll explain
-annotations [[annotation][later]].  For now, we'll take advantage of the fact that
+annotations [[#annotation-class][later]].  For now, we'll take advantage of the fact that
 ~param.label.witness~ holds the name of the chosen rocket.  The
 /witness/ is the result of the successful ~parseRocket~ call, which in
 turn was the result of a success ~parseConstant~ call.  (See the
-definition of [[parse-rocket][parseRocket]] above.)
+definition of [[#define-a-parser-for-rocket-names][parseRocket]] above.)
 
 #+BEGIN_SRC js
 function showChosenRocket(param, position) {
@@ -460,7 +458,6 @@ and any choice that has already been made.
   }
 #+END_SRC
 
-<<annotation>>
 * ~Annotation~ class
 
 Like parsers in other programs, parsers used by ~command.js~ return a
@@ -509,13 +506,12 @@ tags:
 ** ~showCandidates~ and ~showChoices~
 
 We saw ~Annotation~ objects before as parameters to the two functions
-used [[presentation-type][above]] in the introduction to Presentation Types.  Below are the
+used [[#define-a-presentation-type-for-orbits][above]] in the introduction to Presentation Types.  Below are the
 complete function signatures of those functions.  So now you can see
 how you can use the information in an ~Annotation~ to determine
 whether a substring is part of a command name, a parameter name, or a
 parameter value, or if it has associated help text.
 
-<<show-candidates-signature>>
 - ~showCandidates~ (/annotations/, /position/, /param/)
      - /annotations/ :: all the annotations for this command.
      - /position/ :: the current input position, i.e. where the cursor
@@ -578,7 +574,6 @@ in which case, if the server responds with a status code of at least
 zero-parameter /retry/ function that can be called to try sending the
 command to the server again.
 
-<<command-context>>
 * ~CommandContext~ class
 
 The ~CommandContext~ class gives apps a way to provide app-specific
@@ -589,10 +584,9 @@ fetched from the server as possible completions for parameter values,
 or for other application-specific purposes.  For example, a parser for
 dates in a calendar app may reference information about upcoming
 events that is kept in a subclass of ~CommandContext~.  Currently, the
-most sophisticated use to which the context has been put is [[parameter-defaults][parameter
+most sophisticated use to which the context has been put is [[#default-parameter-values][parameter
 defaults]].
 
-<<parameter-defaults>>
 * Default parameter values
 
 ~Command.js~ includes a mechanism for fetching default values for
@@ -688,21 +682,20 @@ might return something like this:
 Now defaults should work as described above, assuming that you've
 modified the server to handle the ~rocket/defaults/<name> URL.
 
-<<parser-combinators>>
 * Parser Combinators
 
 Parser combinators are functions that take parsers as parameters and
 return more powerful parsers based on them.
 
 Each of the functions listed below returns a parser.  A parser is a
-function that takes an input string and a [[success][~Success~]] object.  A
+function that takes an input string and a [[#success][~Success~]] object.  A
 ~Success~ represents the current successful state of the parse,
 including the position reached so far in the string.
 
 Parsing starts with a ~Success~ object at offset zero in the input
 string.  Parsers chain ~Success~ objects until the entire input is
 consumed, unless the input is invalid, i.e. incomplete or incorrect.
-They also return zero or more [[failure][~Failure~]] objects, which represent
+They also return zero or more [[#failure][~Failure~]] objects, which represent
 places where the parse goes from valid to not valid, either because of
 invalid input or because of a premature end.
 
@@ -800,7 +793,7 @@ These are specialized combinators that are less often used.
      parsers that might fail because a computation to produce the
      witness detects the failure.
 - ~parseContext~ (/makeContext/, /parser/) :: Run /parser/, but return
-     a result that substitutes the [[command-context][CommandContext]] in each ~Success~
+     a result that substitutes the [[#commandcontext-class][CommandContext]] in each ~Success~
      result with one produced by calling /makeContext/ on that
      ~Success~.
 - ~annotate~ (/label/, /parser/) :: Return a parser equivalent to
@@ -811,7 +804,6 @@ These are specialized combinators that are less often used.
 For more examples of the use of these parser combinators, see
 [[file:docs/rocket/rocket.js][rocket.js]].
 
-<<internals>>
 * Internals
 
 For the most part, you should not need to understand the internals of
@@ -831,23 +823,21 @@ after all of the successful ones.  (Multiple parses may be in valid at
 some point in the input because the input is ambiguous without the
 rest of the command.)
 
-<<success>>
 ** ~Success~
 
 Each ~Success~ keeps track of four things:
 
-- ~annotations~ :: the [[annotation][~Annotation~ objects]] seen so far
-- ~context~ :: the [[command-context][~CommandContext~]]
+- ~annotations~ :: the [[#annotation-class][~Annotation~ objects]] seen so far
+- ~context~ :: the [[#commandcontext-class][~CommandContext~]]
 - ~end~ :: the end offset in the input string
 - ~witness~ :: the value that represents the substring covered by this
                ~Success~
 
-<<failure>>
 ** ~Failure~
 
 Each ~Failure~ keeps track of four things:
 
-- ~annotations~ :: the [[annotation][~Annotation~ objects]] seen so far
+- ~annotations~ :: the [[#annotation-class][~Annotation~ objects]] seen so far
 - ~completions~ :: an array of strings that are the possible
                    completions from the point where the parser that
                    produced this ~Failure~ started
@@ -861,7 +851,6 @@ completions is incomplete and that completion should therefore pause.
 possible completions.  Hitting ~TAB~ in that case shouldn't result in
 jumping forward, even if only one completion is available.)
 
-<<command-context>>
 * Acknowledgements
 
 ~Command.js~ was inspired by [[https://www.cliki.net/CLIM][CLIM]] (the Common Lisp Interface Manager),
