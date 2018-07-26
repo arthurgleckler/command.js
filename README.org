@@ -680,7 +680,7 @@ might return something like this:
 #+END_SRC
 
 Now defaults should work as described above, assuming that you've
-modified the server to handle the ~rocket/defaults/<name> URL.
+modified the server to handle the ~rocket/defaults/<name>~ URL.
 
 * Parser Combinators
 
@@ -688,15 +688,15 @@ Parser combinators are functions that take parsers as parameters and
 return more powerful parsers based on them.
 
 Each of the functions listed below returns a parser.  A parser is a
-function that takes an input string and a [[#success][~Success~]] object.  A
+function that takes an input string and a [[#success][Success]] object.  A
 ~Success~ represents the current successful state of the parse,
 including the position reached so far in the string.
 
 Parsing starts with a ~Success~ object at offset zero in the input
 string.  Parsers chain ~Success~ objects until the entire input is
 consumed, unless the input is invalid, i.e. incomplete or incorrect.
-They also return zero or more [[#failure][~Failure~]] objects, which represent
-places where the parse goes from valid to not valid, either because of
+They also return one or more [[#failure][Failure]] objects, which represent places
+where the parse goes from valid to not valid, either because of
 invalid input or because of a premature end.
 
 Unless otherwise noted, each function in the lists below returns a
@@ -827,8 +827,8 @@ rest of the command.)
 
 Each ~Success~ keeps track of four things:
 
-- ~annotations~ :: the [[#annotation-class][~Annotation~ objects]] seen so far
-- ~context~ :: the [[#commandcontext-class][~CommandContext~]]
+- ~annotations~ :: the [[#annotation-class][Annotation objects]] seen so far
+- ~context~ :: the [[#commandcontext-class][CommandContext]]
 - ~end~ :: the end offset in the input string
 - ~witness~ :: the value that represents the substring covered by this
                ~Success~
@@ -837,7 +837,7 @@ Each ~Success~ keeps track of four things:
 
 Each ~Failure~ keeps track of four things:
 
-- ~annotations~ :: the [[#annotation-class][~Annotation~ objects]] seen so far
+- ~annotations~ :: the [[#annotation-class][Annotation objects]] seen so far
 - ~completions~ :: an array of strings that are the possible
                    completions from the point where the parser that
                    produced this ~Failure~ started
