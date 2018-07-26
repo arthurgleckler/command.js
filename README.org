@@ -695,7 +695,7 @@ including the position reached so far in the string.
 Parsing starts with a ~Success~ object at offset zero in the input
 string.  Parsers chain ~Success~ objects until the entire input is
 consumed, unless the input is invalid, i.e. incomplete or incorrect.
-They also return one or more [[#failure][Failure]] objects, which represent places
+They also return zero or one [[#failure][Failure]] objects, which represent places
 where the parse goes from valid to not valid, either because of
 invalid input or because of a premature end.
 
