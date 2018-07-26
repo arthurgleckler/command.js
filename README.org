@@ -13,6 +13,24 @@ great success.  A good friend asked me to give him a copy, so I
 finally wrote a user manual and am publishing it.  I hope that you
 will find it useful, too.
 
+* Demo
+
+[[https://arthurgleckler.github.io/command.js/docs/screencast.gif][https://arthurgleckler.github.io/command.js/docs/screencast.gif]]
+
+As you watch the demo, note how it is possible to enter commands with
+few keystrokes by relying on completion using ~SPC~ and ~TAB~.  Also
+note how it is possible to find out what is acceptable input using the
+same keys when there is more than one choice.
+
+Finally, note how the rockets that are valid candidates for a command
+are shown with a box around them when the user is choosing one, and
+are shown with a green background once they have been chosen.  This is
+an example of how an app can respond to commands as they are being
+entered, before the user finishes entering them.  This kind of
+integration makes entering valid commands even easier and faster.
+
+[[https://arthurgleckler.github.io/command.js/docs/rocket/rocket.html][Try it yourself]].
+
 * Table of Contents
 
 #+BEGIN_COMMENT
@@ -90,24 +108,6 @@ or removed.
     is displayed.
   - ~RET~: Execute the current command, but only if it is valid,
     i.e. parses.
-
-* Demo
-
-[[https://arthurgleckler.github.io/command.js/docs/screencast.gif][https://arthurgleckler.github.io/command.js/docs/screencast.gif]]
-
-As you watch the demo, note how it is possible to enter commands with
-few keystrokes by relying on completion using ~SPC~ and ~TAB~.  Also
-note how it is possible to find out what is acceptable input using the
-same keys when there is more than one choice.
-
-Finally, note how the rockets that are valid candidates for a command
-are shown with a box around them when the user is choosing one, and
-are shown with a green background once they have been chosen.  This is
-an example of how an app can respond to commands as they are being
-entered, before the user finishes entering them.  This kind of
-integration makes entering valid commands even easier and faster.
-
-[[https://arthurgleckler.github.io/command.js/docs/rocket/rocket.html][Try it yourself]].
 
 * Command structure
 
