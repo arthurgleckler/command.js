@@ -593,7 +593,7 @@ defaults]].
 parameters from a server.  The idea is that some commands are for
 editing existing objects modeled by the application, and that some
 parameters may represent attributes of those objects, and that those
-objects may be stored on the server, not locally.[fn:1]  When a
+objects may be stored on the server, not locally ([[#footnotes][footnote]]).  When a
 parameter has a default value fetched from the server, hitting ~TAB~
 before entering any characters will cause the fetched value to appear
 in a completion pop-up.
@@ -862,12 +862,14 @@ and web users.
 Thank you to everyone involved in those projects.  Using all three of
 those systems was a pleasure and an inspiration.
 
-[fn:1] I'm not confident that the abstraction provided for handling
-default parameter values is a good one.  I'm documenting it here, but
-it is even more likely to change than other parts of the ~command.js~
-API.  In particular, I don't like the way it conflates parameter names
-and model object attribute names.  In the applications I've built so
-far, this has been a reasonable decision, but this assumption seems
+* Footnotes
+
+I'm not confident that the abstraction provided for handling default
+parameter values is a good one.  I'm documenting it here, but it is
+even more likely to change than other parts of the ~command.js~ API.
+In particular, I don't like the way it conflates parameter names and
+model object attribute names.  In the applications I've built so far,
+this has been a reasonable decision, but this assumption seems
 unlikely to hold.  I also don't like how cache invalidation works
 (purely by time), but that has also worked well so far.
 
