@@ -13,6 +13,58 @@ great success.  A good friend asked me to give him a copy, so I
 finally wrote a user manual and am publishing it.  I hope that you
 will find it useful, too.
 
+* Table of Contents
+
+#+BEGIN_COMMENT
+This table of contents is included manually because Github doesn't
+support automatically generated tables of contents in Org mode
+documents.  Make sure to update it when headlines are added, changed,
+or removed.
+#+END_COMMENT
+
+- [[#command.js][~Command.js~]]
+- [[#features][Features]]
+- [[#special-keys][Special keys]]
+- [[#demo][Demo]]
+- [[#command-structure][Command structure]]
+- [[#how-to-add-command.js-to-your-page][How to add ~command.js~ to your page]]
+  - [[#html][HTML]]
+  - [[#grammar][Grammar]]
+  - [[#execute][Execute]]
+  - [[#initialize][Initialize]]
+- [[#parsing-restricted-parameter-values][Parsing restricted parameter values]]
+  - [[#define-a-parser-for-orbits][Define a parser for orbits]]
+  - [[#define-a-presentation-type-for-orbits][Define a /presentation type/ for orbits]]
+  - [[#use-the-orbit-presentation-type-in-the-grammar][Use the orbit presentation type in the grammar]]
+- [[#responding-to-partial-commands][Responding to partial commands]]
+  - [[#define-a-parser-for-rocket-names][Define a parser for rocket names]]
+  - [[#define-a-presentation-type-for-rocket-names][Define a presentation type for rocket names]]
+  - [[#define-showcandidates-and-showchoices][Define ~showCandidates~ and ~showChoices~]]
+  - [[#use-the-rocket-presentation-type-in-the-grammar][Use the rocket presentation type in the grammar]]
+  - [[#handle-complete-finished-commands][Handle complete (finished) commands]]
+  - [[#handle-partial-unfinished-commands][Handle partial (unfinished) commands]]
+- [[#annotation-class][~Annotation~ class]]
+  - [[#annotation-properties][~Annotation~ properties]]
+  - [[#label-objects][~Label~ objects]]
+  - [[#showcandidates-and-showchoices][~showCandidates~ and ~showChoices~]]
+- [[#sendcommand-function][~sendCommand~ function]]
+- [[#commandcontext-class][~CommandContext~ class]]
+- [[#default-parameter-values][Default parameter values]]
+  - [[#define-a-keyparameter-property][Define a ~keyParameter~ property]]
+  - [[#load-defaults.js][Load ~defaults.js~]]
+  - [[#subclass-commandcontext-using-defaultsmixin][Subclass ~CommandContext~ using ~DefaultsMixin~]]
+  - [[#connect-to-server][Connect to server]]
+- [[#parser-combinators][Parser Combinators]]
+  - [[#common][Common]]
+  - [[#primitive][Primitive]]
+  - [[#specialized][Specialized]]
+- [[#internals][Internals]]
+  - [[#success][~Success~]]
+  - [[#failure][~Failure~]]
+- [[#acknowledgements][Acknowledgements]]
+- [[#footnotes][Footnotes]]
+- [[#copyright][Copyright]]
+
 * Features
 
 - Completion :: Speeds up entering commands.  Shows the user what
