@@ -219,7 +219,7 @@ First, we make an array of the allowed orbit names.
 For each of these orbit names, we use ~parseConstant~ to construct a
 parser that accepts only that name, and returns it.  From those, we
 use ~parseChoice~ to construct a parser that accepts any of the names.
-See [[parser-combinators][Parser Combinators]] below for details about the full parser
+See [[#parser-combinators][Parser Combinators]] below for details about the full parser
 combinator library.
 
 #+BEGIN_SRC js
