@@ -2,6 +2,12 @@
  * GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
  */
 
+@font-face {
+  font-family: "Ruluko";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Ruluko"), url("https://themes.googleusercontent.com/static/fonts/ruluko/v1/ktCr6OaMRtWuActE8_wCCuvvDin1pK8aKteLpeZ5c0A.woff") format("woff");
+}
 #command {
   border-top: 1px solid black;
   background: lightgrey;
