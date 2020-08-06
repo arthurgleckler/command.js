@@ -728,8 +728,11 @@ In our case, the relative URL ~rocket/defaults/Apollo~, for example,
 might return something like this:
 
 #+BEGIN_SRC js
-{"Apollo":{"country":"USA","serial-number":"SA-506"}}
+{"Apollo":{"country":["USA"],"serial-number":["SA-506"]}}
 #+END_SRC
+
+Note that an array of values is returns for each attribute of each
+object.
 
 Now defaults should work as described above, assuming that you've
 modified the server to handle the ~rocket/defaults/<name>~ URL.

@@ -44,10 +44,12 @@ let DefaultsMixin = Base => class extends Base {
           let defaults = [];
 
           for (let id of context.keyValueToIDs(keyValue.label.witness)) {
-            let defaultValue = context.default(id, parameterName);
+            let defaultValues = context.default(id, parameterName);
 
-            if (defaultValue) {
-              defaults.push(defaultValue);
+            if (defaultValues) {
+              for (let d of defaultValues) {
+                defaults.push(d);
+              }
             }
           }
 
