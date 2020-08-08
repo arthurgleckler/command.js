@@ -3,11 +3,11 @@
 // GNU LGPL v3.  See "LICENSE.txt" and "COPYING.LESSER".
 
 let DefaultsMixin = Base => class extends Base {
-  constructor(grammar, makeURL) {
+  constructor(grammar, makeURL, timeout = 1000 * 60 * 5) {
     super();
     this.grammar = grammar;
     this.defaultsCache = {};
-    this.DEFAULTS_VALUE_CACHE_TIMEOUT_MILLISECONDS = 1000 * 60 * 5;
+    this.cacheTimeoutMilliseconds = timeout;
     this.makeURL = makeURL;
   }
 
@@ -71,7 +71,7 @@ let DefaultsMixin = Base => class extends Base {
 
       return "received" in entry
         && (new Date().getTime() - entry.received
-            < this.DEFAULTS_VALUE_CACHE_TIMEOUT_MILLISECONDS);
+            < this.cacheTimeoutMilliseconds);
     }
     return false;
   }
